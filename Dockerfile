@@ -1,12 +1,12 @@
-# Dockerfile ini memberitahu Railway cara menjalankan project PHP ini.
-# Taruh file ini di folder PALING LUAR project (sejajar dengan index.php).
-
 FROM php:8.2-apache
+
+# Nonaktifkan MPM event & worker, lalu aktifkan mpm_prefork untuk mencegah error bentrok MPM
+RUN a2dismod mpm_event mpm_worker || true && a2enmod mpm_prefork
 
 # Aktifkan ekstensi PHP yang dibutuhkan (mysqli untuk koneksi database)
 RUN docker-php-ext-install mysqli
 
-# Aktifkan mod_rewrite Apache (jaga-jaga kalau nanti butuh URL rewriting)
+# Aktifkan mod_rewrite Apache
 RUN a2enmod rewrite
 
 # Salin semua file project ke folder web server
