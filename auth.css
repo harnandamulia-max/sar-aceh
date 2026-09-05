@@ -1,0 +1,165 @@
+/* =====================================================================
+   Variabel warna tema. Sebelumnya file ini memakai var(--bg-container),
+   var(--label-color), var(--text-muted), var(--border-soft) tanpa
+   pernah didefinisikan di mana pun (ada sisa skrip localStorage
+   'sar-theme' di beberapa halaman tapi tidak ada toggle UI-nya, dan
+   tidak ada aturan [data-theme="dark"]). Skrip mati itu sudah dihapus
+   dari halaman-halaman terkait; di sini variabelnya didefinisikan
+   dengan nilai tema terang yang konsisten dengan style.css.
+   ===================================================================== */
+:root {
+    --bg-container: #FFFFFF;
+    --border-soft: #E7E5DE;
+    --label-color: #0A1F3D;
+    --text-muted: #8A8A82;
+}
+
+[data-theme="dark"] {
+    --bg-container: #111B2D;
+    --border-soft: #24324B;
+    --label-color: #C9D4E3;
+    --text-muted: #8592AA;
+}
+
+/* Tombol mode gelap/terang melayang di halaman Login/Register
+   (bentuk & ukuran dasar diwarisi dari .theme-toggle di style.css) */
+.theme-toggle--floating {
+    position: fixed;
+    top: 18px;
+    right: 18px;
+    z-index: 50;
+    width: 40px;
+    height: 40px;
+    background: var(--bg-container);
+    border: 1px solid var(--border-soft);
+    color: var(--label-color);
+    box-shadow: 0 4px 14px rgba(10,31,61,0.20);
+}
+.theme-toggle--floating:hover { background: var(--bg-container); opacity: .85; }
+@media (max-width: 480px) {
+    .theme-toggle--floating { top: 12px; right: 12px; }
+}
+
+/* ===== HALAMAN LOGIN / REGISTER ===== */
+body.auth-page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 24px;
+}
+
+.auth-wrap {
+    max-width: 980px;
+    width: 100%;
+    background: var(--bg-container);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 25px 60px rgba(10,31,61,0.35);
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+    border: 1px solid var(--border-soft);
+}
+
+/* ---- Panel visual: foto tim SAR ---- */
+.auth-visual {
+    position: relative;
+    overflow: hidden;
+    min-height: 560px;
+    background:
+        linear-gradient(180deg, rgba(8,23,41,0.55) 0%, rgba(10,31,61,0.55) 45%, rgba(18,49,92,0.7) 100%),
+        url('rescue-team.jpg');
+    background-size: cover;
+    background-position: center;
+}
+
+.stars span {
+    position: absolute;
+    width: 3px; height: 3px;
+    background: #F7F7F5;
+    border-radius: 50%;
+    opacity: 0;
+    animation: twinkle 3.2s ease-in-out infinite;
+}
+@keyframes twinkle {
+    0%, 100% { opacity: 0; transform: scale(0.6); }
+    50% { opacity: .9; transform: scale(1.2); }
+}
+
+.radar {
+    position: absolute;
+    top: 26px; right: 26px;
+    width: 84px; height: 84px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(201,162,39,0.35);
+}
+.radar::before {
+    content: "";
+    position: absolute; inset: 0;
+    border-radius: 50%;
+    background: conic-gradient(from 0deg, rgba(232,93,4,0.65), transparent 55%);
+    animation: radarSpin 3.2s linear infinite;
+}
+.radar::after {
+    content: "";
+    position: absolute; inset: 10px;
+    border-radius: 50%;
+    border: 1px solid rgba(247,247,245,0.18);
+}
+@keyframes radarSpin { to { transform: rotate(360deg); } }
+
+.auth-visual-text {
+    position: relative;
+    z-index: 2;
+    padding: 40px 34px 0 34px;
+    text-align: center;
+}
+.auth-emblem { margin-bottom: 14px; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.4)); }
+.auth-visual-text h2 {
+    font-family: 'Playfair Display', serif;
+    color: #FFFFFF;
+    font-size: 24px;
+    margin: 0 0 6px 0;
+}
+.auth-visual-text p {
+    color: #D9B94A;
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 13.5px;
+    margin: 0;
+}
+
+/* ---- Kartu form ---- */
+.auth-card {
+    padding: 46px 42px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+.auth-card h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px;
+    color: var(--label-color);
+    margin: 0 0 6px 0;
+}
+.auth-card .auth-desc {
+    color: var(--text-muted);
+    font-size: 13.5px;
+    margin: 0 0 26px 0;
+}
+.auth-card .form-group { margin-bottom: 15px; }
+.auth-switch {
+    text-align: center;
+    margin-top: 18px;
+    font-size: 13.5px;
+    color: var(--text-muted);
+}
+.auth-switch a { color: #C9480A; font-weight: 700; text-decoration: none; }
+.auth-switch a:hover { text-decoration: underline; }
+
+@media (max-width: 820px) {
+    .auth-wrap { grid-template-columns: 1fr; }
+    .auth-visual { min-height: 240px; }
+    .auth-visual-text { padding: 22px 20px 0 20px; }
+    .auth-visual-text h2 { font-size: 19px; }
+}
