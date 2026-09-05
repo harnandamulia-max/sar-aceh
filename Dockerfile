@@ -1,21 +1,19 @@
 FROM php:8.2-apache
 
-# Hapus paksa file modul MPM yang sering bikin bentrok di Debian/Ubuntu Apache
-RUN rm -f /etc/apache2/mods-enabled/mpm_event.* /etc/apache2/mods-enabled/mpm_worker.* \
-    && ln -s /etc/apache2/mods-available/mpm_prefork.load /etc/apache2/mods-enabled/ \
-    && ln -s /etc/apache2/mods-available/mpm_prefork.conf /etc/apache2/mods-enabled/
-
-# Aktifkan ekstensi PHP yang dibutuhkan (mysqli untuk koneksi database)
+# Ekstensi PHP yang dibutuhkan (mysqli untuk koneksi database)
 RUN docker-php-ext-install mysqli
 
-# Aktifkan mod_rewrite Apache
+# Aktifkan mod_rewrite (jaga-jaga, tidak wajib untuk app ini tapi umum dipakai)
 RUN a2enmod rewrite
 
-# Salin semua file project ke folder web server
+# Salin semua file project ke folder web root Apache
 COPY . /var/www/html/
 
-# Pastikan Apache mendengarkan di port yang diberikan Railway
-ENV PORT=8080
-RUN sed -i "s/80/\${PORT}/g" /etc/apache2/sites-available/000-default.conf /etc/apache2/ports.conf
+# Skrip yang menyesuaikan port Apache ke $PORT dari Railway SAAT container
+# dijalankan (bukan saat build -- itu bug di versi sebelumnya).
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
-EXPOSE 8080
+EXPOSE 80
+
+CMD ["/entrypoint.sh"]
