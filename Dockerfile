@@ -1,7 +1,9 @@
 FROM php:8.2-apache
 
-# Nonaktifkan MPM event & worker, lalu aktifkan mpm_prefork untuk mencegah error bentrok MPM
-RUN a2dismod mpm_event mpm_worker || true && a2enmod mpm_prefork
+# Hapus paksa file modul MPM yang sering bikin bentrok di Debian/Ubuntu Apache
+RUN rm -f /etc/apache2/mods-enabled/mpm_event.* /etc/apache2/mods-enabled/mpm_worker.* \
+    && ln -s /etc/apache2/mods-available/mpm_prefork.load /etc/apache2/mods-enabled/ \
+    && ln -s /etc/apache2/mods-available/mpm_prefork.conf /etc/apache2/mods-enabled/
 
 # Aktifkan ekstensi PHP yang dibutuhkan (mysqli untuk koneksi database)
 RUN docker-php-ext-install mysqli
