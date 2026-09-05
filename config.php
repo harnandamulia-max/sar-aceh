@@ -1,16 +1,17 @@
 <?php
-// Kalau Railway (atau hosting lain) menyediakan environment variable
-// database, pakai itu. Kalau tidak ada (misal di XAMPP lokal kamu),
-// jatuh ke nilai default seperti biasa. Jadi file ini tetap jalan
-// baik di lokal maupun setelah dideploy, tanpa perlu diubah manual.
+// ==========================================================================
+// KONFIGURASI DATABASE
+// Otomatis pakai environment variable Railway jika tersedia,
+// kalau tidak (misal saat dev lokal di XAMPP), pakai default localhost.
+// ==========================================================================
 
-$server        = getenv('MYSQLHOST') ?: "localhost";
-$user          = getenv('MYSQLUSER') ?: "root";
-$password      = getenv('MYSQLPASSWORD') ?: ""; // Sesuaikan password database Anda jika ada
-$nama_database = getenv('MYSQLDATABASE') ?: "db_sar_aceh";
-$port          = getenv('MYSQLPORT') ?: 3306;
+$server       = getenv('MYSQLHOST') ?: 'localhost';
+$user         = getenv('MYSQLUSER') ?: 'root';
+$password     = getenv('MYSQLPASSWORD') ?: '';
+$nama_database = getenv('MYSQLDATABASE') ?: 'db_sar_aceh';
+$port         = getenv('MYSQLPORT') ?: 3306;
 
-$db = mysqli_connect($server, $user, $password, $nama_database, (int) $port);
+$db = mysqli_connect($server, $user, $password, $nama_database, $port);
 
 if (!$db) {
     die("Gagal terhubung dengan database: " . mysqli_connect_error());
