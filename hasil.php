@@ -174,7 +174,8 @@ include("nav.php");
         <script>
             var lat = <?php echo $lat; ?>;
             var lng = <?php echo $lng; ?>;
-            var r1Meter = <?php echo $h['r1'] * 1000; ?>;
+            var baseSpeed = <?php echo $base_speed; ?>;
+            var jumlahHari = <?php echo $jumlah_hari; ?>;
             var r2Meter = <?php echo $h['r2'] * 1000; ?>;
             var latMin = <?php echo $h['latMin']; ?>;
             var latMax = <?php echo $h['latMax']; ?>;
@@ -190,15 +191,52 @@ include("nav.php");
             // Titik LKP (Last Known Position)
             L.marker([lat, lng]).addTo(map).bindPopup('<b>LKP</b><br>Titik terakhir korban terlihat').openPopup();
 
-            // Possible Search Area (lingkaran luar)
-            L.circle([lat, lng], {
-                radius: r1Meter,
-                color: '#337ab7',
-                weight: 2,
-                fill: false
-            }).addTo(map).bindPopup('Possible Search Area (r1 = ' + (r1Meter/1000).toFixed(2) + ' km)');
+            // ===== Lingkaran Possible Search Area PER HARI =====
+            // Setiap hari korban diasumsikan berjalan sejauh baseSpeed km,
+            // sehingga radius pencarian bertambah tiap harinya. Kalau input
+            // "lama hilang" = 5 hari, maka di peta akan digambar 5 lingkaran
+            // (Hari ke-1 s/d Hari ke-5), bukan cuma satu lingkaran akhir.
+            var totalHari = Math.max(1, Math.ceil(jumlahHari));
+            var allBounds = [[lat, lng]];
 
-            // Probable Search Area (lingkaran dalam)
+            function warnaHari(hari, total) {
+                // Makin besar nomor harinya, makin gelap warna birunya
+                var lightness = Math.max(28, 72 - (hari / total) * 44);
+                return 'hsl(210, 80%, ' + lightness + '%)';
+            }
+
+            for (var hari = 1; hari <= totalHari; hari++) {
+                // Hari terakhir dibatasi supaya persis sama dengan r1 asli,
+                // meski jumlahHari-nya pecahan (mis. 4.5 hari).
+                var radiusKm = Math.min(baseSpeed * hari, baseSpeed * jumlahHari);
+                var radiusM = radiusKm * 1000;
+                var warna = warnaHari(hari, totalHari);
+
+                var lingkaranHari = L.circle([lat, lng], {
+                    radius: radiusM,
+                    color: warna,
+                    weight: 2,
+                    fill: false
+                }).addTo(map);
+
+                lingkaranHari.bindPopup('<b>Hari ke-' + hari + '</b><br>Radius pencarian: ' + radiusKm.toFixed(2) + ' km');
+
+                // Label "H1", "H2", dst yang selalu tampil di tepi utara lingkaran
+                var labelLat = lat + (radiusKm / 111.0);
+                L.marker([labelLat, lng], {
+                    icon: L.divIcon({
+                        className: 'hari-label',
+                        html: '<span style="background:' + warna + ';color:#fff;padding:1px 6px;border-radius:10px;font-size:11px;font-weight:600;white-space:nowrap;">H' + hari + '</span>',
+                        iconSize: [0, 0]
+                    }),
+                    interactive: false
+                }).addTo(map);
+
+                allBounds.push([lat + radiusKm / 111.0, lng]);
+                allBounds.push([lat - radiusKm / 111.0, lng]);
+            }
+
+            // Probable Search Area (lingkaran dalam, hasil analisa/survey = hari terakhir)
             L.circle([lat, lng], {
                 radius: r2Meter,
                 color: '#d9534f',
@@ -216,8 +254,30 @@ include("nav.php");
                 dashArray: '6, 6'
             }).addTo(map).bindPopup('Luas Area Akhir (Persegi)');
 
-            // Zoom otomatis agar seluruh area (termasuk kotak) terlihat
-            map.fitBounds(bounds.concat([[lat, lng]]), { padding: [30, 30] });
+            // Legenda radius per hari
+            var legend = L.control({ position: 'bottomleft' });
+            legend.onAdd = function () {
+                var div = L.DomUtil.create('div', 'map-legend');
+                div.style.background = '#fff';
+                div.style.color = '#222';
+                div.style.padding = '8px 10px';
+                div.style.borderRadius = '8px';
+                div.style.boxShadow = '0 1px 6px rgba(0,0,0,0.3)';
+                div.style.fontSize = '12px';
+                div.style.lineHeight = '1.6';
+                var html = '<b>Radius per hari</b><br>';
+                for (var h2 = 1; h2 <= totalHari; h2++) {
+                    var rk = Math.min(baseSpeed * h2, baseSpeed * jumlahHari);
+                    var w2 = warnaHari(h2, totalHari);
+                    html += '<span style="display:inline-block;width:10px;height:10px;background:' + w2 + ';border-radius:50%;margin-right:6px;"></span>Hari ' + h2 + ': ' + rk.toFixed(2) + ' km<br>';
+                }
+                div.innerHTML = html;
+                return div;
+            };
+            legend.addTo(map);
+
+            // Zoom otomatis agar seluruh lingkaran per-hari dan kotak terlihat
+            map.fitBounds(bounds.concat(allBounds), { padding: [30, 30] });
         </script>
     <?php endif; ?>
 </div>
